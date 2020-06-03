@@ -13,27 +13,27 @@ import (
 
 // struct containing the parameters of the board
 type Board struct {
-	size              int           // Size of Sudoku (normally == 9)
-	rowBlockSize      int           // Number of rows blocks
-	colBlockSize      int           // Number of column blocks
-	runes             set.RuneSet   // All values that appear in the game
-	finalValue        []rune        // The final value for each position
+	size            int           // Size of Sudoku (normally == 9)
+	rowBlockSize    int           // Number of rows blocks
+	colBlockSize    int           // Number of column blocks
+	runes           set.RuneSet   // All values that appear in the game
+	finalValue      []rune        // The final value for each position
 
-	possibleValues    []set.RuneSet // Possible values on each position
+	candidates      []set.RuneSet // Possible values on each position
 
-	rowBoardPositions [][]int       // Board positions for each row
-	colBoardPositions [][]int       // Board positions for each col
-	boxBoardPositions [][]int       // Board positions for each box
+	rowPositions    [][]int       // Board positions for each row
+	colPositions    [][]int       // Board positions for each col
+	boxPositions    [][]int       // Board positions for each box
 
-	finalValuesLeft   int           // Number of final points left to find
+	finalValuesLeft int           // Number of final points left to find
 }
 
 // Count total number of possible values
-func (b *Board) CountPossibleValues() int {
+func (b *Board) CountCandidates() int {
 	count := 0
 
 	for pos := 0; pos < b.size*b.size; pos++ {
-		count += b.possibleValues[pos].Size()
+		count += b.candidates[pos].Size()
 	}
 	return count
 }
@@ -41,6 +41,17 @@ func (b *Board) CountPossibleValues() int {
 // Count have many final positions are left
 func (b *Board) CountFinalValuesLeft() int {
 	return b.finalValuesLeft
+}
+
+// Check if the board has an invalid configuration
+func (b *Board) CheckInvalid() bool {
+	for pos := 0; pos < b.size*b.size; pos++ {
+		if (b.finalValue[pos] == '-' && b.candidates[pos].Size() == 0) ||
+		   (b.finalValue[pos] != '-' && b.candidates[pos].Size() != 0) {
+			return true
+		}
+	}
+	return false
 }
 
 // Create a new instance of Board
@@ -89,19 +100,19 @@ func (b *Board) FinalValuesToString() string {
 }
 
 // Write the candidates to a string
-func (b *Board) PossibleValuesToString() string {
+func (b *Board) CandidatesToString() string {
 	str := "Entries left on board: " + strconv.Itoa(b.finalValuesLeft) + "\n"
 
-	str += "Number of possible values on board: " + strconv.Itoa(b.CountPossibleValues()) + "\n"
+	str += "Number of possible values on board: " + strconv.Itoa(b.CountCandidates()) + "\n"
 	str += "Current possible values on board:\n"
 
 	for pos := 0; pos < b.size*b.size; pos++ {
-		if b.possibleValues[pos].Empty() {
+		if b.candidates[pos].Empty() {
 			continue
 		}
 		row := b.PositionToRow(pos)
 		col := b.PositionToCol(pos)
-		str += "("+strconv.Itoa(row+1)+","+strconv.Itoa(col+1)+"): " + b.possibleValues[pos].ToString() + "\n"
+		str += "("+strconv.Itoa(row+1)+","+strconv.Itoa(col+1)+"): " + b.candidates[pos].ToString() + "\n"
 	}
 	return str
 }
@@ -141,23 +152,23 @@ func (b *Board) readHeader(scanner *bufio.Scanner) {
 // Help routine taking care of the initialization.
 func (b *Board) initializeGeneral() {
 
-	b.rowBoardPositions = make([][]int, b.size)
-	b.colBoardPositions = make([][]int, b.size)
-	b.boxBoardPositions = make([][]int, b.size)
+	b.rowPositions = make([][]int, b.size)
+	b.colPositions = make([][]int, b.size)
+	b.boxPositions = make([][]int, b.size)
 
 	b.finalValue = make([]rune, b.size*b.size)
-	b.possibleValues = make([]set.RuneSet, b.size*b.size)
+	b.candidates = make([]set.RuneSet, b.size*b.size)
 	b.finalValuesLeft = b.size*b.size
 
 	// Read second line with valid characters
 	for pos := 0; pos < b.size*b.size; pos++ {
-		b.possibleValues[pos].Copy(b.runes)
+		b.candidates[pos].Copy(b.runes)
 	}
 
 	for i := 0; i < b.size; i++ {
-		b.rowBoardPositions[i] = make([]int, 0, b.size)
-		b.colBoardPositions[i] = make([]int, 0, b.size)
-		b.boxBoardPositions[i] = make([]int, 0, b.size)
+		b.rowPositions[i] = make([]int, 0, b.size)
+		b.colPositions[i] = make([]int, 0, b.size)
+		b.boxPositions[i] = make([]int, 0, b.size)
 	}
 
 	// Initialize the board positions for rows, columns and boxs
@@ -166,9 +177,9 @@ func (b *Board) initializeGeneral() {
 		col := b.PositionToCol(pos)
 		box := b.PositionToBox(pos)
 
-		b.rowBoardPositions[row] = append(b.rowBoardPositions[row], pos)
-		b.colBoardPositions[col] = append(b.colBoardPositions[col], pos)
-		b.boxBoardPositions[box] = append(b.boxBoardPositions[box], pos)
+		b.rowPositions[row] = append(b.rowPositions[row], pos)
+		b.colPositions[col] = append(b.colPositions[col], pos)
+		b.boxPositions[box] = append(b.boxPositions[box], pos)
 	}
 }
 
@@ -218,17 +229,17 @@ func (b *Board) SetPosition(pos int, r rune) {
 	col := b.PositionToCol(pos)
 	box := b.PositionToBox(pos)
 
-	b.possibleValues[pos].Clear()
+	b.candidates[pos].Clear()
 
-	for _, i := range b.rowBoardPositions[row] {
-		b.possibleValues[i].Remove(r)
+	for _, i := range b.rowPositions[row] {
+		b.candidates[i].Remove(r)
 	}
 
-	for _, i := range b.colBoardPositions[col] {
-		b.possibleValues[i].Remove(r)
+	for _, i := range b.colPositions[col] {
+		b.candidates[i].Remove(r)
 	}
 
-	for _, i := range b.boxBoardPositions[box] {
-		b.possibleValues[i].Remove(r)
+	for _, i := range b.boxPositions[box] {
+		b.candidates[i].Remove(r)
 	}
 }

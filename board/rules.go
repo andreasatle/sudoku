@@ -8,7 +8,7 @@ import (
 func (b *Board) countValues(positions []int) map[rune]int {
 	counter := make(map[rune]int)
 	for _, pos := range positions {
-		for _, r := range b.possibleValues[pos].ToSlice() {
+		for _, r := range b.candidates[pos].ToSlice() {
 			counter[r]++
 		}
 	}
@@ -27,8 +27,8 @@ func filterCounter(counter map[rune]int, num int) {
 // When only one possible value, move it to final value
 func (b *Board) NakedSingles() {
 	for i := 0; i < b.size*b.size; i++ {
-		if b.possibleValues[i].Size() == 1 {
-			r := b.possibleValues[i].ToSlice()[0]
+		if b.candidates[i].Size() == 1 {
+			r := b.candidates[i].ToSlice()[0]
 			b.SetPosition(i, r)
 		}
 	}
@@ -42,7 +42,7 @@ func (b *Board) HiddenSingles() {
 	setRemainingValues := func(positions []int, counter map[rune]int) {
 		for key := range counter {
 			for _, pos := range positions {
-				if b.possibleValues[pos].Contains(key) {
+				if b.candidates[pos].Contains(key) {
 					b.SetPosition(pos, key)
 				}
 			}
@@ -60,9 +60,9 @@ func (b *Board) HiddenSingles() {
 
 	// Loop over all possible rows, columns and boxes
 	for i := 0; i < b.size; i++ {
-		hiddenSinglesBlock(b.rowBoardPositions[i])
-		hiddenSinglesBlock(b.colBoardPositions[i])
-		hiddenSinglesBlock(b.boxBoardPositions[i])
+		hiddenSinglesBlock(b.rowPositions[i])
+		hiddenSinglesBlock(b.colPositions[i])
+		hiddenSinglesBlock(b.boxPositions[i])
 	}
 }
 
@@ -72,7 +72,7 @@ func (b *Board) NakedPairs() {
 	tuplePositions := func(positions []int) *set.IntSet {
 		tuplePos := set.NewIntSet()
 		for _, pos := range positions {
-			if b.possibleValues[pos].Size() == 2 {
+			if b.candidates[pos].Size() == 2 {
 				tuplePos.Add(pos)
 			}
 		}
@@ -88,8 +88,8 @@ func (b *Board) NakedPairs() {
 		// Loop in upper triangular pattern detect pairs of equal tuples
 		for _, posI := range tuplePos.ToSlice() {
 			for _, posJ := range tuplePos.ToSlice() {
-				pVposI := &b.possibleValues[posI]
-				pVposJ := &b.possibleValues[posJ]
+				pVposI := &b.candidates[posI]
+				pVposJ := &b.candidates[posJ]
 				if posI < posJ && pVposI.Equal(pVposJ) {
 					tuplePairs.Add(posI)
 					tuplePairs.Add(posJ)
@@ -104,7 +104,7 @@ func (b *Board) NakedPairs() {
 	removeValues := func(positions []int, tuplePairs *set.IntSet, values *set.RuneSet) {
 		positionSet := set.FromIntSlice(positions).Difference(tuplePairs)
 		for _, pos := range positionSet.ToSlice() {
-			posVal := &b.possibleValues[pos]
+			posVal := &b.candidates[pos]
 			for _, value := range values.ToSlice() {
 				posVal.Remove(value)
 			}
@@ -119,9 +119,9 @@ func (b *Board) NakedPairs() {
 	}
 
 	for i := 0; i < b.size; i++ {
-		nakedPairsBlock(b.rowBoardPositions[i])
-		nakedPairsBlock(b.colBoardPositions[i])
-		nakedPairsBlock(b.boxBoardPositions[i])
+		nakedPairsBlock(b.rowPositions[i])
+		nakedPairsBlock(b.colPositions[i])
+		nakedPairsBlock(b.boxPositions[i])
 	}
 }
 
@@ -140,7 +140,7 @@ func (b *Board) PointingPairs() {
 		posSlice := posSet.ToSlice()
 		runeSet := set.NewRuneSet()
 		for _, pos := range posSlice {
-			runeSet = runeSet.Union(&b.possibleValues[pos])
+			runeSet = runeSet.Union(&b.candidates[pos])
 		}
 		return runeSet
 	}
@@ -150,7 +150,7 @@ func (b *Board) PointingPairs() {
 		vals := valIsect.Difference(valSet)
 		for _, key := range vals.ToSlice() {
 			for _, pos := range posSet.ToSlice() {
-				b.possibleValues[pos].Remove(key)
+				b.candidates[pos].Remove(key)
 			}
 		}
 	}
@@ -171,8 +171,8 @@ func (b *Board) PointingPairs() {
 
 	for i := 0; i < b.size; i++ {
 		for j := 0; j < b.size; j++ {
-			pointingPairsBox(b.boxBoardPositions[i], b.rowBoardPositions[j])
-			pointingPairsBox(b.boxBoardPositions[i], b.colBoardPositions[j])
+			pointingPairsBox(b.boxPositions[i], b.rowPositions[j])
+			pointingPairsBox(b.boxPositions[i], b.colPositions[j])
 		}
 	}
 }
@@ -199,7 +199,7 @@ func (b *Board) XWings() {
 
 	createRowColSet := func(value rune, positions []int, rowSet, colSet *set.IntSet) {
 		for _, pos := range positions {
-			if b.possibleValues[pos].Contains(value) {
+			if b.candidates[pos].Contains(value) {
 				rowSet.Add(b.PositionToRow(pos))
 				colSet.Add(b.PositionToCol(pos))
 			}
@@ -217,22 +217,22 @@ func (b *Board) XWings() {
 		posSet := set.NewIntSet()
 		if isRow {
 			for _, i := range colSet.ToSlice() {
-				posSet = posSet.Union(set.FromIntSlice(b.colBoardPositions[i]))
+				posSet = posSet.Union(set.FromIntSlice(b.colPositions[i]))
 			}
 			for _, i := range rowSet.ToSlice() {
-				posSet = posSet.Difference(set.FromIntSlice(b.rowBoardPositions[i]))
+				posSet = posSet.Difference(set.FromIntSlice(b.rowPositions[i]))
 			}
 		} else {
 			for _, i := range rowSet.ToSlice() {
-				posSet = posSet.Union(set.FromIntSlice(b.rowBoardPositions[i]))
+				posSet = posSet.Union(set.FromIntSlice(b.rowPositions[i]))
 			}
 			for _, i := range colSet.ToSlice() {
-				posSet = posSet.Difference(set.FromIntSlice(b.colBoardPositions[i]))
+				posSet = posSet.Difference(set.FromIntSlice(b.colPositions[i]))
 			}
 		}
 
 		for _, pos := range posSet.ToSlice() {
-			b.possibleValues[pos].Remove(value)
+			b.candidates[pos].Remove(value)
 		}
 	}
 
@@ -241,11 +241,11 @@ func (b *Board) XWings() {
 
 		// Get the board positions for either row or column i and j
 		if isRow { // i and j are row indices; k, l are column indices
-			positionsI = b.rowBoardPositions[i]
-			positionsJ = b.rowBoardPositions[j]
+			positionsI = b.rowPositions[i]
+			positionsJ = b.rowPositions[j]
 		} else { // i and j are column indices; k, l are row indices
-			positionsI = b.colBoardPositions[i]
-			positionsJ = b.colBoardPositions[j]
+			positionsI = b.colPositions[i]
+			positionsJ = b.colPositions[j]
 		}
 
 		// Count occurrencies of each value in the blocks
@@ -288,15 +288,15 @@ func (b *Board) HiddenPairs() {
 	processPair := func(valI, valJ rune, positions []int) {
 		posSet := set.NewIntSet()
 		for _, pos := range positions {
-			if b.possibleValues[pos].Contains(valI) && b.possibleValues[pos].Contains(valJ) {
+			if b.candidates[pos].Contains(valI) && b.candidates[pos].Contains(valJ) {
 				posSet.Add(pos)
 			}
 		}
 		if posSet.Size() == 2 {
 			for _, pos := range posSet.ToSlice() {
-				b.possibleValues[pos].Clear()
-				b.possibleValues[pos].Add(valI)
-				b.possibleValues[pos].Add(valJ)
+				b.candidates[pos].Clear()
+				b.candidates[pos].Add(valI)
+				b.candidates[pos].Add(valJ)
 			}
 		}
 		//fmt.Println(valI,valJ,posSet.ToString())
@@ -318,9 +318,9 @@ func (b *Board) HiddenPairs() {
 	}
 
 	for i := 0 ; i < b.size; i++ {
-		hiddenPairsBlock(b.rowBoardPositions[i])
-		hiddenPairsBlock(b.colBoardPositions[i])
-		hiddenPairsBlock(b.boxBoardPositions[i])
+		hiddenPairsBlock(b.rowPositions[i])
+		hiddenPairsBlock(b.colPositions[i])
+		hiddenPairsBlock(b.boxPositions[i])
 	}
 }
 

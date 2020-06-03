@@ -8,7 +8,7 @@ import (
 	"github.com/andreasatle/sudoku/board"
 )
 
-var possibleValues = flag.Bool("posval", false, "Print Possible Values")
+var candidates = flag.Bool("c", false, "Print Candidates")
 var fileName = flag.String("f", "no-file", "Initial Sudoku (sdk-file)")
 
 func main() {
@@ -19,6 +19,9 @@ func main() {
 
 	for b.CountFinalValuesLeft() != 0 {
 		prompt(b, input)()
+		if b.CheckInvalid() {
+			panic("Sudoku is invalid")
+		}
 	}
 	fmt.Println(b.FinalValuesToString())
 }
@@ -30,9 +33,9 @@ func prompt(b *board.Board, input *bufio.Scanner) func() {
 	}
 	str := "==========================\n"
 	str += b.FinalValuesToString()
-	if *possibleValues {
+	if *candidates {
 		str += "--------------------------\n"
-		str += b.PossibleValuesToString()
+		str += b.CandidatesToString()
 	}
 	str += "===================\n"
 	str += "Menu options: \n"

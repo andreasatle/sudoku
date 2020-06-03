@@ -5,7 +5,7 @@ import (
 	"flag"
 	"os"
 	"bufio"
-	"sudoku/board"
+	"github.com/andreasatle/sudoku/board"
 )
 
 var possibleValues = flag.Bool("posval", false, "Print Possible Values")

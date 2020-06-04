@@ -9,6 +9,7 @@ import (
 	"os"
 	"github.com/andreasatle/set"
 	"strconv"
+	"bytes"
 )
 
 // struct containing the parameters of the board
@@ -86,25 +87,28 @@ func (b *Board) RowColToPosition(row int, col int) int {
 // Write the final values to a string
 func (b *Board) FinalValuesToString() string {
 
-	str := "Current values on board:\n"
+	var buf bytes.Buffer
+	buf.WriteString("Current values on board:")
 
 	for row := 0; row < b.size; row++ {
+		buf.WriteString("\n")
 		for col := 0; col < b.size; col++ {
 			pos := b.RowColToPosition(row, col)
-			str += string(b.finalValue[pos])
+			buf.WriteString(string(b.finalValue[pos]))
 		}
-		str += "\n"
 	}
 
-	return str
+	return buf.String()
 }
 
 // Write the candidates to a string
 func (b *Board) CandidatesToString() string {
-	str := "Entries left on board: " + strconv.Itoa(b.finalValuesLeft) + "\n"
-
-	str += "Number of possible values on board: " + strconv.Itoa(b.CountCandidates()) + "\n"
-	str += "Current possible values on board:\n"
+	var buf bytes.Buffer
+	buf.WriteString("Entries left on board: ")
+	buf.WriteString(strconv.Itoa(b.finalValuesLeft))
+	buf.WriteString("\nNumber of possible values on board: ")
+	buf.WriteString(strconv.Itoa(b.CountCandidates()))
+	buf.WriteString("\nCurrent possible values on board:\n")
 
 	for pos := 0; pos < b.size*b.size; pos++ {
 		if b.candidates[pos].Empty() {
@@ -112,9 +116,15 @@ func (b *Board) CandidatesToString() string {
 		}
 		row := b.PositionToRow(pos)
 		col := b.PositionToCol(pos)
-		str += "("+strconv.Itoa(row+1)+","+strconv.Itoa(col+1)+"): " + b.candidates[pos].ToString() + "\n"
+		buf.WriteString("(")
+		buf.WriteString(strconv.Itoa(row+1))
+		buf.WriteString(",")
+		buf.WriteString(strconv.Itoa(col+1))
+		buf.WriteString("): ")
+		buf.WriteString(b.candidates[pos].ToString())
+		buf.WriteString("\n")
 	}
-	return str
+	return buf.String()
 }
 
 // Convenient error check

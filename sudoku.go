@@ -5,6 +5,7 @@ import (
 	"flag"
 	"os"
 	"bufio"
+	"bytes"
 	"github.com/andreasatle/sudoku/board"
 )
 
@@ -31,25 +32,28 @@ func prompt(b *board.Board, input *bufio.Scanner) func() {
 	exitFunc := func() {
 		os.Exit(0)
 	}
-	str := "==========================\n"
-	str += b.FinalValuesToString()
+	var buf bytes.Buffer
+	buf.WriteString("\n==========================\n")
+	buf.WriteString(b.FinalValuesToString())
+	buf.WriteString("\n")
 	if *candidates {
-		str += "--------------------------\n"
-		str += b.CandidatesToString()
+		buf.WriteString("--------------------------\n")
+		buf.WriteString(b.CandidatesToString())
+		buf.WriteString("\n")
 	}
-	str += "===================\n"
-	str += "Menu options: \n"
-	str += "===================\n"
-	str += "1) Hidden Singles\n"
-	str += "2) Naked Singles\n"
-	str += "3) Naked Pairs\n"
-	str += "4) Pointing Pairs\n"
-	str += "5) Hidden Pairs\n"
-	str += "6) X-Wings\n"
-	str += "0) Exit program\n"
-	str += "===================\n"
-	str += "Your coice: "
-	fmt.Print(str)
+	buf.WriteString("===================\n")
+	buf.WriteString("Menu options: \n")
+	buf.WriteString("===================\n")
+	buf.WriteString("1) Hidden Singles\n")
+	buf.WriteString("2) Naked Singles\n")
+	buf.WriteString("3) Naked Pairs\n")
+	buf.WriteString("4) Pointing Pairs\n")
+	buf.WriteString("5) Hidden Pairs\n")
+	buf.WriteString("6) X-Wings\n")
+	buf.WriteString("0) Exit program\n")
+	buf.WriteString("===================\n")
+	buf.WriteString("Your coice: ")
+	fmt.Print(buf.String())
 	input.Scan()
 	switch choice := input.Text(); choice {
 	case "1":

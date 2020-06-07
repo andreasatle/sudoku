@@ -5,8 +5,10 @@ import (
 	"flag"
 	"os"
 	"bufio"
+	"io/ioutil"
 	"bytes"
 	"github.com/andreasatle/sudoku/board"
+	"log"
 )
 
 var candidates = flag.Bool("c", false, "Print Candidates")
@@ -14,7 +16,15 @@ var fileName = flag.String("f", "no-file", "Initial Sudoku (sdk-file)")
 
 func main() {
 	flag.Parse()
-	b := board.NewBoard(*fileName)
+
+	inputBoard, err := ioutil.ReadFile(*fileName)
+
+	//fid, err := os.Open(*fileName)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	b := board.NewBoard(inputBoard)
 
 	input := bufio.NewScanner(os.Stdin)
 
@@ -35,13 +45,11 @@ func prompt(b *board.Board, input *bufio.Scanner) func() {
 	var buf bytes.Buffer
 	buf.WriteString("\n==========================\n")
 	buf.WriteString(b.FinalValuesToString())
-	buf.WriteString("\n")
 	if *candidates {
-		buf.WriteString("--------------------------\n")
+		buf.WriteString("\n--------------------------\n")
 		buf.WriteString(b.CandidatesToString())
-		buf.WriteString("\n")
 	}
-	buf.WriteString("===================\n")
+	buf.WriteString("\n===================\n")
 	buf.WriteString("Menu options: \n")
 	buf.WriteString("===================\n")
 	buf.WriteString("1) Hidden Singles\n")
@@ -79,3 +87,4 @@ func prompt(b *board.Board, input *bufio.Scanner) func() {
 	}
 	return func() {}
 }
+

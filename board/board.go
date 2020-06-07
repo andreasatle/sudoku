@@ -3,13 +3,12 @@
 package board
 
 import (
-	"bufio"
 	"fmt"
 	"log"
-	"os"
 	"github.com/andreasatle/set"
 	"strconv"
 	"bytes"
+	"strings"
 )
 
 // struct containing the parameters of the board
@@ -56,9 +55,9 @@ func (b *Board) CheckInvalid() bool {
 }
 
 // Create a new instance of Board
-func NewBoard(fileName string) *Board {
+func NewBoard(input []byte) *Board {
 	b := new(Board)
-	b.read(fileName)
+	b.read(input)
 	return b
 }
 
@@ -127,36 +126,26 @@ func (b *Board) CandidatesToString() string {
 	return buf.String()
 }
 
-// Convenient error check
-func check(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
 // Read "header" of file containing the initial sudoku.
 // First line contains size, rowbox, colbox.
 // Second line contains the characters that are used, e.g. -123456789.
 // Note that the first character is the value for not set.
 // The third line is blank.
-func (b *Board) readHeader(scanner *bufio.Scanner) {
+func (b *Board) readHeader(input []string) {
 	// Read first line of file
-	scanner.Scan()
-	_, err := fmt.Sscanf(scanner.Text(), "%d %d %d", &b.size, &b.rowBlockSize, &b.colBlockSize)
-	check(err)
+	_, err := fmt.Sscanf(input[0], "%d %d %d", &b.size, &b.rowBlockSize, &b.colBlockSize)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Allocate memory for struct
 
-	scanner.Scan()
-	line := []rune(scanner.Text())
+	line := []rune(input[1])
 
 	b.runes.Clear()
 	for _, r := range line {
 		b.runes.Add(r)
 	}
-
-	// Read extra newline
-	scanner.Scan()
 }
 
 // Help routine taking care of the initialization.
@@ -196,11 +185,10 @@ func (b *Board) initializeGeneral() {
 // Read the initial board from input-file.
 // The board is a b.size x b.size grid of characters,
 // that should have been read by the function readHeader.
-func (b *Board) readBoard(scanner *bufio.Scanner) {
+func (b *Board) readBoard(input []string) {
 
 	for row := 0; row < b.size; row++ {
-		scanner.Scan()
-		line := scanner.Text()
+		line := input[row]
 		for col := 0; col < b.size; col++ {
 
 			r := rune(line[col])
@@ -215,18 +203,12 @@ func (b *Board) readBoard(scanner *bufio.Scanner) {
 	}
 }
 
-// Read initial sudoku board and set up the Board struct
-func (b *Board) read(fileName string) {
-	fid, err := os.Open(fileName)
+func (b *Board) read(input []byte) {
 
-	check(err)
-
-	scanner := bufio.NewScanner(fid)
-	scanner.Split(bufio.ScanLines)
-
-	b.readHeader(scanner)
+	lines := strings.Split(string(input), "\n")
+	b.readHeader(lines[:2])
 	b.initializeGeneral()
-	b.readBoard(scanner)
+	b.readBoard(lines[3:])
 }
 
 // Set a position of the board to a value indexToRune[index]

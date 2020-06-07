@@ -1,14 +1,14 @@
 package main
 
 import (
-	"fmt"
-	"flag"
-	"os"
 	"bufio"
-	"io/ioutil"
 	"bytes"
+	"flag"
+	"fmt"
 	"github.com/andreasatle/sudoku/board"
+	"io/ioutil"
 	"log"
+	"os"
 )
 
 var candidates = flag.Bool("c", false, "Print Candidates")
@@ -87,4 +87,3 @@ func prompt(b *board.Board, input *bufio.Scanner) func() {
 	}
 	return func() {}
 }
-

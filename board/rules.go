@@ -268,7 +268,7 @@ func (b *Board) XWings() {
 	}
 
 	for i := 0; i < b.size; i++ {
-		for j := i+1; j < b.size; j++ {
+		for j := i + 1; j < b.size; j++ {
 			xWingsBlock(i, j, true)  // Investigate rows first
 			xWingsBlock(i, j, false) // Investigate columns first
 		}
@@ -279,7 +279,7 @@ func (b *Board) HiddenPairs() {
 	getValues := func(positions []int) []rune {
 		counter := b.countValues(positions)
 		filterCounter(counter, 2)
-		values := make([]rune,0,len(counter))
+		values := make([]rune, 0, len(counter))
 		for key := range counter {
 			values = append(values, key)
 		}
@@ -317,7 +317,7 @@ func (b *Board) HiddenPairs() {
 		}
 	}
 
-	for i := 0 ; i < b.size; i++ {
+	for i := 0; i < b.size; i++ {
 		hiddenPairsBlock(b.rowPositions[i])
 		hiddenPairsBlock(b.colPositions[i])
 		hiddenPairsBlock(b.boxPositions[i])

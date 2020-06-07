@@ -3,29 +3,29 @@
 package board
 
 import (
-	"fmt"
-	"log"
-	"github.com/andreasatle/set"
-	"strconv"
 	"bytes"
+	"fmt"
+	"github.com/andreasatle/set"
+	"log"
+	"strconv"
 	"strings"
 )
 
 // struct containing the parameters of the board
 type Board struct {
-	size            int           // Size of Sudoku (normally == 9)
-	rowBlockSize    int           // Number of rows blocks
-	colBlockSize    int           // Number of column blocks
-	runes           set.RuneSet   // All values that appear in the game
-	finalValue      []rune        // The final value for each position
+	size         int         // Size of Sudoku (normally == 9)
+	rowBlockSize int         // Number of rows blocks
+	colBlockSize int         // Number of column blocks
+	runes        set.RuneSet // All values that appear in the game
+	finalValue   []rune      // The final value for each position
 
-	candidates      []set.RuneSet // Possible values on each position
+	candidates []set.RuneSet // Possible values on each position
 
-	rowPositions    [][]int       // Board positions for each row
-	colPositions    [][]int       // Board positions for each col
-	boxPositions    [][]int       // Board positions for each box
+	rowPositions [][]int // Board positions for each row
+	colPositions [][]int // Board positions for each col
+	boxPositions [][]int // Board positions for each box
 
-	finalValuesLeft int           // Number of final points left to find
+	finalValuesLeft int // Number of final points left to find
 }
 
 // Count total number of possible values
@@ -47,7 +47,7 @@ func (b *Board) CountFinalValuesLeft() int {
 func (b *Board) CheckInvalid() bool {
 	for pos := 0; pos < b.size*b.size; pos++ {
 		if (b.finalValue[pos] == '-' && b.candidates[pos].Size() == 0) ||
-		   (b.finalValue[pos] != '-' && b.candidates[pos].Size() != 0) {
+			(b.finalValue[pos] != '-' && b.candidates[pos].Size() != 0) {
 			return true
 		}
 	}
@@ -116,9 +116,9 @@ func (b *Board) CandidatesToString() string {
 		row := b.PositionToRow(pos)
 		col := b.PositionToCol(pos)
 		buf.WriteString("(")
-		buf.WriteString(strconv.Itoa(row+1))
+		buf.WriteString(strconv.Itoa(row + 1))
 		buf.WriteString(",")
-		buf.WriteString(strconv.Itoa(col+1))
+		buf.WriteString(strconv.Itoa(col + 1))
 		buf.WriteString("): ")
 		buf.WriteString(b.candidates[pos].ToString())
 		buf.WriteString("\n")
@@ -157,7 +157,7 @@ func (b *Board) initializeGeneral() {
 
 	b.finalValue = make([]rune, b.size*b.size)
 	b.candidates = make([]set.RuneSet, b.size*b.size)
-	b.finalValuesLeft = b.size*b.size
+	b.finalValuesLeft = b.size * b.size
 
 	// Read second line with valid characters
 	for pos := 0; pos < b.size*b.size; pos++ {

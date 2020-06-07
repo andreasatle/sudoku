@@ -1,7 +1,6 @@
 package board
 
-const xwingsParam =
-`9 3 3
+const xwingsParam = `9 3 3
 123456789
 
 --38--51-
@@ -15,8 +14,7 @@ const xwingsParam =
 -1-4--692
 `
 
-const small6x6Param =
-`6 3 2
+const small6x6Param = `6 3 2
 123456
 
 --36--
@@ -27,8 +25,7 @@ const small6x6Param =
 --14--
 `
 
-const nakedSinglesParam =
-`9 3 3
+const nakedSinglesParam = `9 3 3
 123456789
 
 1--2----4

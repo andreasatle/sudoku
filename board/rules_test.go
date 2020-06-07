@@ -1,8 +1,8 @@
 package board
 
 import (
-	"testing"
 	"fmt"
+	"testing"
 )
 
 func TestRules(t *testing.T) {

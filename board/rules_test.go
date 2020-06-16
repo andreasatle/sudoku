@@ -1,100 +1,148 @@
 package board
 
 import (
-	"fmt"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-func TestRules(t *testing.T) {
-	TestNakedSingles(t)
-	TestHiddenSingles(t)
-	TestNakedPairs(t)
-	TestPointingPairs(t)
-	TestXWings(t)
-	TestHiddenPairs(t)
-}
-
+// Test that two '8' are added to the final values for naked singles
 func TestNakedSingles(t *testing.T) {
 	inputBoard := []byte(nakedSinglesParam)
 	b := NewBoard(inputBoard)
-	finalBefore := b.finalValuesLeft
-	b.NakedSingles()
-	finalAfter := b.finalValuesLeft
 
-	// Gauss-Seidel like update, gives more entries removed...
-	if finalBefore != 53 || finalAfter != 46 {
-		errMsg := fmt.Sprintf("NakedSingles fail (Before:53,After:46): (%d,%d)", finalBefore, finalAfter)
-		t.Errorf(errMsg)
-	}
+	assert.NotEqual(t, '8', b.finalValue[5])
+	assert.NotEqual(t, '8', b.finalValue[11])
+
+	b.NakedSingles()
+
+	assert.Equal(t, '8', b.finalValue[5])
+	assert.Equal(t, '8', b.finalValue[11])
 }
 
+// Test that three final values {1,4,7} are set for hidden singles
 func TestHiddenSingles(t *testing.T) {
 	inputBoard := []byte(hiddenSinglesParam)
 	b := NewBoard(inputBoard)
-	finalBefore := b.finalValuesLeft
-	b.HiddenSingles()
-	finalAfter := b.finalValuesLeft
 
-	// Gauss-Seidel like update, gives more entries removed...
-	if finalBefore != 53 || finalAfter != 42 {
-		errMsg := fmt.Sprintf("HiddenSingles fail (Before:53,After:42): (%d,%d)", finalBefore, finalAfter)
-		t.Errorf(errMsg)
-	}
+	assert.NotEqual(t, '7', b.finalValue[2])
+	assert.NotEqual(t, '4', b.finalValue[13])
+	assert.NotEqual(t, '1', b.finalValue[17])
+
+	b.HiddenSingles()
+
+	assert.Equal(t, '7', b.finalValue[2])
+	assert.Equal(t, '4', b.finalValue[13])
+	assert.Equal(t, '1', b.finalValue[17])
 }
 
+// Test that 4 candidates are removed for naked pairs
 func TestNakedPairs(t *testing.T) {
 	inputBoard := []byte(nakedPairsParam)
 	b := NewBoard(inputBoard)
-	candidatesBefore := b.CountCandidates()
-	b.NakedPairs()
-	candidatesAfter := b.CountCandidates()
 
-	// Gauss-Seidel like update, gives more entries removed...
-	if candidatesBefore != 59 || candidatesAfter != 55 {
-		errMsg := fmt.Sprintf("NakedPairs fail (Before:57,After:55): (%d,%d)", candidatesBefore, candidatesAfter)
-		t.Errorf(errMsg)
-	}
+	assert.True(t, b.candidates[64].Contains('C'))
+	assert.True(t, b.candidates[73].Contains('G'))
+	assert.True(t, b.candidates[78].Contains('B'))
+	assert.True(t, b.candidates[78].Contains('G'))
+
+	b.NakedPairs()
+
+	assert.True(t, !b.candidates[64].Contains('C'))
+	assert.True(t, !b.candidates[73].Contains('G'))
+	assert.True(t, !b.candidates[78].Contains('B'))
+	assert.True(t, !b.candidates[78].Contains('G'))
 }
 
+// Test that 18 candidates are removed for pointing pairs
 func TestPointingPairs(t *testing.T) {
 	inputBoard := []byte(pointingPairsParam)
 	b := NewBoard(inputBoard)
-	candidatesBefore := b.CountCandidates()
-	b.PointingPairs()
-	candidatesAfter := b.CountCandidates()
 
-	// Gauss-Seidel like update, gives more entries removed...
-	if candidatesBefore != 198 || candidatesAfter != 180 {
-		errMsg := fmt.Sprintf("PointingPairs fail (Before:198,After:180): (%d,%d)", candidatesBefore, candidatesAfter)
-		t.Errorf(errMsg)
-	}
+	assert.True(t, b.candidates[18].Contains('1'))
+	assert.True(t, b.candidates[20].Contains('1'))
+
+	assert.True(t, b.candidates[32].Contains('2'))
+	assert.True(t, b.candidates[41].Contains('2'))
+	assert.True(t, b.candidates[50].Contains('2'))
+	assert.True(t, b.candidates[68].Contains('2'))
+
+	assert.True(t, b.candidates[32].Contains('3'))
+	assert.True(t, b.candidates[41].Contains('3'))
+	assert.True(t, b.candidates[50].Contains('3'))
+	assert.True(t, b.candidates[68].Contains('3'))
+
+	assert.True(t, b.candidates[36].Contains('4'))
+	assert.True(t, b.candidates[37].Contains('4'))
+
+	assert.True(t, b.candidates[39].Contains('6'))
+
+	assert.True(t, b.candidates[71].Contains('7'))
+
+	assert.True(t, b.candidates[69].Contains('8'))
+	assert.True(t, b.candidates[70].Contains('8'))
+	assert.True(t, b.candidates[71].Contains('8'))
+
+	assert.True(t, b.candidates[57].Contains('9'))
+
+	b.PointingPairs()
+
+	assert.True(t, !b.candidates[18].Contains('1'))
+	assert.True(t, !b.candidates[20].Contains('1'))
+
+	assert.True(t, !b.candidates[32].Contains('2'))
+	assert.True(t, !b.candidates[41].Contains('2'))
+	assert.True(t, !b.candidates[50].Contains('2'))
+	assert.True(t, !b.candidates[68].Contains('2'))
+
+	assert.True(t, !b.candidates[32].Contains('3'))
+	assert.True(t, !b.candidates[41].Contains('3'))
+	assert.True(t, !b.candidates[50].Contains('3'))
+	assert.True(t, !b.candidates[68].Contains('3'))
+
+	assert.True(t, !b.candidates[36].Contains('4'))
+	assert.True(t, !b.candidates[37].Contains('4'))
+
+	assert.True(t, !b.candidates[39].Contains('6'))
+
+	assert.True(t, !b.candidates[71].Contains('7'))
+
+	assert.True(t, !b.candidates[69].Contains('8'))
+	assert.True(t, !b.candidates[70].Contains('8'))
+	assert.True(t, !b.candidates[71].Contains('8'))
+
+	assert.True(t, !b.candidates[57].Contains('9'))
 }
 
-
+// Test that 6 candidates are removed for X-Wings
 func TestXWings(t *testing.T) {
 	inputBoard := []byte(xWingsParam)
 	b := NewBoard(inputBoard)
-	candidatesBefore := b.CountCandidates()
-	b.XWings()
-	candidatesAfter := b.CountCandidates()
 
-	// Gauss-Seidel like update, gives more entries removed...
-	if candidatesBefore != 77 || candidatesAfter != 71 {
-		errMsg := fmt.Sprintf("XWings fail (Before:77,After:71): (%d,%d)", candidatesBefore, candidatesAfter)
-		t.Errorf(errMsg)
-	}
+	assert.True(t, b.candidates[1].Contains('4'))
+	assert.True(t, b.candidates[4].Contains('4'))
+	assert.True(t, b.candidates[10].Contains('4'))
+	assert.True(t, b.candidates[13].Contains('4'))
+	assert.True(t, b.candidates[46].Contains('4'))
+	assert.True(t, b.candidates[49].Contains('4'))
+
+	b.XWings()
+
+	assert.True(t, !b.candidates[1].Contains('4'))
+	assert.True(t, !b.candidates[4].Contains('4'))
+	assert.True(t, !b.candidates[10].Contains('4'))
+	assert.True(t, !b.candidates[13].Contains('4'))
+	assert.True(t, !b.candidates[46].Contains('4'))
+	assert.True(t, !b.candidates[49].Contains('4'))
 }
 
+// Test that 1 candidate is removed for hidden pairs
 func TestHiddenPairs(t *testing.T) {
 	inputBoard := []byte(hiddenPairsParam)
 	b := NewBoard(inputBoard)
-	candidatesBefore := b.CountCandidates()
-	b.HiddenPairs()
-	candidatesAfter := b.CountCandidates()
 
-	// Gauss-Seidel like update, gives more entries removed...
-	if candidatesBefore != 68 || candidatesAfter != 67 {
-		errMsg := fmt.Sprintf("HiddenPairs fail (Before:68,After:67): (%d,%d)", candidatesBefore, candidatesAfter)
-		t.Errorf(errMsg)
-	}
+	assert.True(t, b.candidates[44].Contains('6'))
+
+	b.HiddenPairs()
+
+	assert.True(t, !b.candidates[44].Contains('6'))
 }

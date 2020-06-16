@@ -1,31 +1,16 @@
 package board
 
 import (
-	"strconv"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
-
-func Test(t *testing.T) {
-	TestBoard(t)
-	TestRules(t)
-}
-
-func TestBoard(t *testing.T) {
-	TestSizes(t)
-	TestBlocks(t)
-	TestSets(t)
-}
 
 func TestSizes(t *testing.T) {
 	inputBoard := []byte(xwingsParam)
 	b := NewBoard(inputBoard)
-	if b.CountFinalValuesLeft() != 29 {
-		t.Errorf("Wrong number of final values left (29): " + strconv.Itoa(b.CountFinalValuesLeft()))
-	}
+	assert.Equal(t, 29, b.CountFinalValuesLeft(), "Number of final values left.")
 
-	if b.CountCandidates() != 77 {
-		t.Errorf("Wrong number of possible values (77): " + strconv.Itoa(b.CountCandidates()))
-	}
+	assert.Equal(t, 77, b.CountCandidates(), "Number of possible values.")
 }
 
 func TestBlocks(t *testing.T) {
@@ -38,7 +23,7 @@ func TestBlocks(t *testing.T) {
 	correctBoxs := [][]int{{0, 1, 2, 6, 7, 8}, {3, 4, 5, 9, 10, 11}, {12, 13, 14, 18, 19, 20}, {15, 16, 17, 21, 22, 23}, {24, 25, 26, 30, 31, 32}, {27, 28, 29, 33, 34, 35}}
 	flag = true
 	for i, line := range b.rowPositions {
-		for j, _ := range line {
+		for j := range line {
 			if b.rowPositions[i][j] != correctRows[i][j] ||
 				b.colPositions[i][j] != correctCols[i][j] ||
 				b.boxPositions[i][j] != correctBoxs[i][j] {
@@ -46,24 +31,14 @@ func TestBlocks(t *testing.T) {
 			}
 		}
 	}
-	if !flag {
-		t.Errorf("Wrong definition of rows")
-	}
+	assert.True(t, flag, "Definition of rows")
 }
 
 func TestSets(t *testing.T) {
 	inputBoard := []byte(small6x6Param)
 	b := NewBoard(inputBoard)
 
-	if b.size != 6 {
-		t.Errorf("Wrong size of board (6): " + strconv.Itoa(b.size))
-	}
-
-	if b.rowBlockSize != 3 {
-		t.Errorf("Wrong number of row blocks in board (3): " + strconv.Itoa(b.rowBlockSize))
-	}
-
-	if b.colBlockSize != 2 {
-		t.Errorf("Wrong number of column blocks in board (2): " + strconv.Itoa(b.colBlockSize))
-	}
+	assert.Equal(t, 6, b.size, "Size of board.")
+	assert.Equal(t, 3, b.rowBlockSize, "Size of row block.")
+	assert.Equal(t, 2, b.colBlockSize, "Size of column block.")
 }

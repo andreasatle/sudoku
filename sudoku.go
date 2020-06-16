@@ -19,7 +19,6 @@ func main() {
 
 	inputBoard, err := ioutil.ReadFile(*fileName)
 
-	//fid, err := os.Open(*fileName)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -38,6 +38,7 @@ const nakedSinglesParam = `9 3 3
 -853-9-1-
 4----6--5
 `
+
 // Use same board for naked singles and hidden singles
 const hiddenSinglesParam = nakedSinglesParam
 
@@ -54,6 +55,7 @@ B-DEAF-IC
 A----H-F-
 E----D-A-
 `
+
 // Replace this!
 const pointingPairsParam = `9 3 3
 123456789

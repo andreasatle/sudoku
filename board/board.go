@@ -14,8 +14,8 @@ import (
 // struct containing the parameters of the board
 type Board struct {
 	size         int         // Size of Sudoku (normally == 9)
-	rowBlockSize int         // Number of rows blocks
-	colBlockSize int         // Number of column blocks
+	rowBlockSize int         // Number of rows blocks (normally == 3)
+	colBlockSize int         // Number of column blocks (normally == 3)
 	runes        set.RuneSet // All values that appear in the game
 	finalValue   []rune      // The final value for each position
 
